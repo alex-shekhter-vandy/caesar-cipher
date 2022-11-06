@@ -13,6 +13,7 @@ type Cipher interface {
 const (
 	cipherAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	alphabetBase   = int('A')
+	lastAsciiCode  = int('Z')
 )
 
 var (
@@ -70,11 +71,12 @@ func (cc *caesarCipher) Encrypt(clearText string) (cipherText string, err error)
 	// log.Printf("Rotated alphabet: %s", string(cc.alphabet))
 	cipher := make([]rune, len(clearText))
 	for i, ch := range []rune(strings.ToUpper(clearText)) {
-		if !unicode.IsLetter(ch) {
+		if !unicode.IsLetter(ch) || int(ch) > lastAsciiCode {
 			cipher[i] = ch
 		} else {
 			chb := int(ch) - alphabetBase
-			cipher[i] = cc.alphabet[chb%alphabetLen]
+			chbs := chb % alphabetLen
+			cipher[i] = cc.alphabet[chbs]
 		}
 	}
 	// log.Printf("Encrypted: \"%s\"", string(cipher))
@@ -86,7 +88,7 @@ func (cc *caesarCipher) Decrypt(cipherText string) (clearText string, err error)
 
 	ab := []rune(cipherAlphabet)
 	for i, ch := range []rune(strings.ToUpper(cipherText)) {
-		if !unicode.IsLetter(ch) {
+		if !unicode.IsLetter(ch) || int(ch) > lastAsciiCode {
 			clear[i] = ch
 		} else {
 			chb := cc.rotatedChToPos[ch]
